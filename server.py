@@ -1,21 +1,17 @@
 import asyncio
 from sanic_ext import Extend
-from vonage import Vonage, Auth
-from vonage_sms import SmsMessage
-from sanic import Sanic, Request
-from models.response import Response
-from models.ttypes import EventType, Match
 from datetime import datetime
 from typing import Dict, List
+from sanic import Sanic, Request
+from aiohttp import ClientSession
+from models.response import Response
+from models.ttypes import EventType, Match
 from parsers.tournaments import search_tournaments, get_tournament_info, get_mat_assignment, get_brackets, get_bracket_data_html
 
 
 app = Sanic("trackwrestling-parser")
 app.config.CORS_ORIGINS = "*"
 Extend(app)
-
-auth = Auth(api_key="1a15c1b8", api_secret="FbD2xK1r8OkWQtQp")
-vonage = Vonage(auth=auth)
 
 
 # Store the last known state of matches for each tournament
@@ -96,20 +92,14 @@ async def check_match_updates():
                     
                     # Print any detected changes
                     for change in changes:
-                        responseData = vonage.sms.send(
-                            SmsMessage(
-                                from_="19075312879",
-                                to="14018680051",
-                                text=f"{change}"
-                            )
-                        )
+                        print("Sending Discord notification...")
+                        url: str = "https://discord.com/api/webhooks/1320069410995699833/9WUm6zR0YpbyL4doeYgZ82EmBUvHhZgmlQP_tzb5_cHINA_Avu687AiYuOpUbDyFic_d"
+                        payload = {
+                            "content": "@everyone " + change
+                        }
+                        async with ClientSession().post(url, json=payload) as resp:
+                            print(f"Discord response: {resp.status}")
 
-                        print("Response data: ", responseData.model_dump_json(exclude_unset=True))
-
-                        # if responseData["messages"][0]["status"] == "0":
-                        #     print("Message sent successfully.")
-                        # else:
-                        #     print(f"Message failed with error: {responseData['messages'][0]['error-text']}")
                         print(f"[{datetime.now()}] {change}")
                 
                 # Update stored state
@@ -118,7 +108,7 @@ async def check_match_updates():
         except Exception as e:
             print(f"Error in background task: {e}")
 
-        await asyncio.sleep(15)
+        await asyncio.sleep(5)
 
 @app.before_server_start
 async def setup_background_tasks(app, loop):
