@@ -277,7 +277,7 @@ async def get_mat_assignment(
     Returns:
         List[Match]: A list of Match objects representing the mat assignments
     """
-    return _parse_tournament_matches(open("htmls/mat-schedule.html", "r").read())
+    # return _parse_tournament_matches(open("htmls/mat-schedule.html", "r").read())
     async with session_manager.get_session(tournament_id) as session:
         async with session.get(
             f"https://www.trackwrestling.com/{tournament_type.tournament_type}/MB_MatAssignmentDisplay.jsp",
