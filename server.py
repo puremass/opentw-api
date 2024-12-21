@@ -70,12 +70,12 @@ def detect_match_changes(old_matches: List[Match], new_matches: List[Match]) -> 
 
 async def check_match_updates():
     """Background task to check for match updates every 30 seconds"""
-    while False:
+    while True:
         try:
             # Get all active tournaments (you'll need to implement this based on your needs)
             active_tournaments = [
                 # Example structure: (tournament_type, tournament_id)
-                ("predefined", 1227848138),
+                ("predefined", 867679132),
                 # Add more tournaments as needed
             ]
 

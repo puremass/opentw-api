@@ -56,27 +56,28 @@ try {
 	Object.assign(gtmObject, {"slots": ["footer","bracket-sidebar"], "adUnit": "event"});
 	Object.assign(gtmObject.targeting, {
 		"zone": ["events"],
-		"state_id": ["1"],
-		"governing_body_id": ["57"],
+		"state_id": ["16"],
+		"governing_body_id": ["17"],
 		"year": ["2024"],
 		"month": ["12"],
-		"event_id": ["O-891667132"]
+		"event_id": ["P-867679132"]
 	});
 } catch(e) {
 	console.log(e);
 }
 
 function viewProfile(twId){
-	openPage("../membership/ViewProfile.jsp?TIM=1734466022705&twSessionId=zyxwvutsrq&twId=" + twId, 500, 1000, "maximize=yes,scrollbars=yes,resizable=yes,menubar=yes", "TWProfileWindow");
+	openPage("../membership/ViewProfile.jsp?TIM=1734798377146&twSessionId=zyxwvutsrq&twId=" + twId, 500, 1000, "maximize=yes,scrollbars=yes,resizable=yes,menubar=yes", "TWProfileWindow");
 }
 
 function viewClub(cId){
-	openPage("../membership/ViewClub.jsp?TIM=1734466022705&twSessionId=zyxwvutsrq&clubId=" + cId, 500, 1000, "maximize=yes,scrollbars=yes,resizable=yes,menubar=yes", "TWClubWindow");
+	openPage("../membership/ViewClub.jsp?TIM=1734798377146&twSessionId=zyxwvutsrq&clubId=" + cId, 500, 1000, "maximize=yes,scrollbars=yes,resizable=yes,menubar=yes", "TWClubWindow");
 }
 
 function watchVideo(mId){
-	window.open("../VideoPlayer.jsp?TIM=1734466022705&twSessionId=zyxwvutsrq&matchId=" + mId, "_blank");
+	window.open("../VideoPlayer.jsp?TIM=1734798377146&twSessionId=zyxwvutsrq&matchId=" + mId, "_blank");
 }
+
 
 var lastGroupId = "";
 
@@ -85,10 +86,8 @@ function openBoutSheet(boutNumber,prelimInd){
 		if(prelimInd==null){
 			prelimInd = "N";
 		}
-		if("N"=="Y"){
-			openPage("BoutDisplay.jsp?TIM=1734466022705&twSessionId=zyxwvutsrq&groupId=" + lastGroupId + "&boutNumber=" + boutNumber + "&prelimInd="+prelimInd,500,.99,"maximize=yes,scrollbars=yes,resizable=yes,menubar=yes","boutDisplay_" + lastGroupId + "_"+boutNumber);
-		}else if("Y"=="Y"){
-			openPage("PBPBoutCheck.jsp?TIM=1734466022705&twSessionId=zyxwvutsrq&groupId=" + lastGroupId + "&boutNumber=" + boutNumber + "&prelimInd=" + prelimInd,.5,.5,"maximize=yes,scrollbars=yes,resizable=yes,menubar=yes","TextCam_open_891667132");
+		if("Y"=="Y"){
+			openPage("PBPBoutCheck.jsp?TIM=1734798377146&twSessionId=zyxwvutsrq&groupId=" + lastGroupId + "&boutNumber=" + boutNumber + "&prelimInd=" + prelimInd,.5,.5,"maximize=yes,scrollbars=yes,resizable=yes,menubar=yes","TextCam_open_867679132");
 		}else{
 			alert("There is no additional information available for this bout.");
 		}
@@ -100,14 +99,13 @@ function openBoutSheet(boutNumber,prelimInd){
 function verifyUser(){
 	try{
 		if("true"=="false"){
-			location.href = "../Login.jsp?TIM=1734466022705&twSessionId=zyxwvutsrq";
+			location.href = "../Login.jsp?TIM=1734798377146&twSessionId=zyxwvutsrq";
 		}
 	}catch(error){
 		alert("An error occurred and below is the error message.\n\n" + error.message);
 	}
 }
 
-var divisions = new Pile();
 var weights = new Pile();
 var templates = new Pile();
 var bracketTypes = new Pile();
@@ -128,7 +126,7 @@ function startUp(){
 	var a;
 	var p;
 
-	str = "15~0~Default Template~500~300~12~1,Entire Bracket";
+	str = "54~0~Default Template~900~590~8~0,Prelims,2,Championship Bracket,3,Consolation Bracket~55~0~Default Template~700~870~7~0,Prelims,2,Championship Bracket,3,Consolation Bracket";
 	var ndx = 0;
 
 	if(str != ""){
@@ -161,23 +159,7 @@ function startUp(){
 
 	}
 
-	str = "786544132~Scramble~786564132~6th Boys~786565132~7th Boys~786566132~8th Boys~786567132~6th Girls~786568132~7th Girls~786569132~8th Girls";
-
-	ndx = 0;
-
-	if(str!=null && str!=""){
-
-		arr = str.split("~");
-
-		for(var i=0;i<arr.length;i+=2){
-
-			divisions.add(new Division(ndx++, parseInt(arr[i+0]), arr[i+1]));
-
-		}
-
-	}
-
-	str = "786544132~1418444138~72-78~15~786544132~1418464138~76-80~15~786544132~1418465138~77-84~15~786544132~1418445138~85~15~786544132~1418448138~85-88A~15~786544132~1418450138~90-95~15~786544132~1418452138~95-100~15~786544132~1418468138~98-100~15~786544132~1418475138~96-104~15~786544132~1418500138~99-104~15~786544132~1418455138~104-105~15~786544132~1418497138~104-105A~15~786544132~1418479138~111-112~15~786544132~1418481138~115-125~15~786544132~1418484138~115-125A~15~786544132~1418456138~129-132~15~786544132~1418503138~125-135A~15~786544132~1418488138~135-137~15~786544132~1418505138~128-138~15~786544132~1418459138~134-141~15~786544132~1418491138~138-142~15~786544132~1418469138~143~15~786544132~1418492138~140-145~15~786544132~1418489138~138-150~15~786544132~1418472138~145-158~15~786544132~1418461138~150-159~15~786544132~1418463138~178-190~15~786544132~1418419138~214-233~15~786544132~1418466138~77-80~15~786544132~1418474138~79-84~15~786544132~1418446138~85A~15~786544132~1418447138~85-88~15~786544132~1418451138~90-98~15~786544132~1418478138~100-104A~15~786544132~1418498138~102-104~15~786544132~1418454138~95-104~15~786544132~1418476138~96-104A~15~786544132~1418453138~100-105~15~786544132~1418501138~99-105~15~786544132~1418482138~111-115~15~786544132~1418480138~112-119~15~786544132~1418504138~125-128~15~786544132~1418457138~129-134~15~786544132~1418487138~125-135~15~786544132~1418506138~135-138~15~786544132~1418490138~137-138~15~786544132~1418458138~132-141~15~786544132~1418470138~138-143~15~786544132~1418493138~142-150~15~786544132~1418494138~143-153~15~786544132~1418462138~158-159~15~786544132~1418473138~177-190~15~786544132~1418449138~88-95~15~786544132~1418467138~95~15~786544132~1418502138~99-102~15~786544132~1418477138~100-104~15~786544132~1418499138~104~15~786544132~1418483138~115~15~786544132~1418485138~111-119~15~786544132~1418460138~141-142~15~786544132~1418471138~140-143~15~786544132~1418496138~137-145~15~786544132~1418495138~143-145~15~786544132~1418486138~119-125~15";
+	str = "1195224138~106~54~1195225138~113~54~1195226138~120~54~1195227138~126~55~1195228138~132~54~1195229138~138~54~1195230138~144~55~1195231138~150~55~1195232138~157~55~1195233138~165~55~1195234138~175~55~1195235138~190~55~1195236138~215~55~1195237138~285~55";
 
 	ndx = 0;
 
@@ -187,24 +169,17 @@ function startUp(){
 
 		var w;
 
-		for(var i=0;i<arr.length;i+=4){
+		for(var i=0;i<arr.length;i+=3){
 
-			w = new Weight(ndx++, parseInt(arr[i+0]), parseInt(arr[i+1]), arr[i+2], parseInt(arr[i+3]));
+			w = new Weight(ndx++, parseInt(arr[i+0]), arr[i+1], parseInt(arr[i+2]));
 
 			weights.add( w );
-
-			for(var j=0;j<divisions.size();j++){
-				if(divisions.get(j).divisionId==w.divisionId){
-					divisions.get(j).weights.add(w);
-					break;
-				}
-			}
 
 		}
 
 	}
 
-	str = "15";
+	str = "54,55";
 
 	if(str!=null){
 		arr = str.split(",");
@@ -213,7 +188,7 @@ function startUp(){
 		}
 	}
 
-	drawWeightGroups();
+	drawWeights();
 	
 	defaultBF += "<div class='message bracket-message' onclick='foucsSidebarBox()'>";
 	defaultBF += "	<i aria-hidden='true' class='message-icon icon-bracket'></i>";
@@ -226,7 +201,7 @@ function startUp(){
 	emptyBF += "	<h1>Whoah!</h1>";
 	emptyBF += "	<h2>Nothing to see here...</h2>";
 	emptyBF += "</div>";
-	
+		
 	document.getElementById("bracket-frame").innerHTML = defaultBF;
 
 	var newWindowFrame = document.getElementById("newWindowFrame");
@@ -261,12 +236,12 @@ function startUp(){
 	attachBracketsAnalytic();
 }
 
-function drawWeightGroups(){
+function drawWeights(){
 
 	var s = document.createElement("select");
-	s.id = "weightGroupBox"; s.name = "weightGroupBox";
+	s.id = "weightBox"; s.name = "weightBox";
 	s.className = "tw-box";
-	s.onchange = function(){ weightGroupChanged(this); };
+	s.onchange = function(){ weightChanged(this.value); };
 	var placeholder = document.createElement("option");
 	placeholder.label = "Weight Class";
 	placeholder.text = "Weight Class";
@@ -275,37 +250,26 @@ function drawWeightGroups(){
 	placeholder.selected = true;
 	s.appendChild(placeholder);
 	
-	var d,og,o,w;
-	for(var i=0;i<divisions.size();i++){
-		d = divisions.get(i);
-		if(d.divisionIndex !== ""){
-			og = document.createElement("optgroup");
-			og.label = d.divisionName;
-			s.appendChild(og);
-			if(d.weights){
-				for(var j=0;j<d.weights.size();j++){
-					w = d.weights.get(j);
-					o = document.createElement("option");
-					o.value = w.weightIndex;
-					o.label = d.divisionName + " - " + w.weightName;
-					o.text = w.weightName;
-					if(w.weightId == "") o.selected = "true";
-					og.appendChild(o);
-					
-				}
-			}
-		}
+	var o,w;
+	for(var i=0;i<weights.size();i++){
+		w = weights.get(i);
+		o = document.createElement("option");
+		o.value = w.weightIndex;
+		o.label = w.weightName;
+		o.text = w.weightName;
+		if(w.weightId == "") o.selected = "true";
+		s.appendChild(o);
 	}
 
-	document.getElementById("weightGroupFrame").innerHTML = "";
-	document.getElementById("weightGroupFrame").appendChild(s);
+	document.getElementById("weightFrame").innerHTML = "";
+	document.getElementById("weightFrame").appendChild(s);
+
+	document.getElementById("templateFrame").innerHTML = "";
+
+	document.getElementById("settingsFrame").innerHTML = "";
 	
 	if(s.value != "") s.onchange();
 
-}
-
-function weightGroupChanged(el){
-	weightChanged(el.value);
 }
 
 function weightChanged(wNdx){
@@ -318,7 +282,7 @@ function weightChanged(wNdx){
 
 		w = weights.get(parseInt(wNdx));
 
-		html += "<select id='templateBox' name='templateBox' onchange='templateChanged()' class='tw-box'>";
+		html += "<select id='templateBox' name='templateBox' class='tw-box' onchange='templateChanged(this.value)'>";
 		var t;
 
 		for(var i=0;i<templates.size();i++){
@@ -350,7 +314,6 @@ function weightChanged(wNdx){
 	}
 
 	templateChanged();
-
 }
 
 function templateChanged(){
@@ -413,11 +376,11 @@ function getPagesHTML(t){
 
 function printBracket(){
 	with(window.document.theForm){
-		if(weightGroupBox.value==""){
-			alert("You must select a weight group to view a bracket in.");
+		if(weightBox.value==""){
+			alert("You must select a weight class to view the bracket for.");
 		}else{
 
-			var w = weights.get(parseInt(weightGroupBox.value));
+			var w = weights.get(parseInt(weightBox.value));
 			var t = templates.get(parseInt(templateBox.value));
 			t.bracketWidth = bracketWidth.value;
 			t.bracketHeight = bracketHeight.value;
@@ -444,7 +407,7 @@ function printBracket(){
 				}
 			}
 
-			var loc = "Bracket.jsp?TIM=1734466022705&twSessionId=zyxwvutsrq";
+			var loc = "Bracket.jsp?TIM=1734798377146&twSessionId=zyxwvutsrq";
 			loc += "&groupId=" + w.weightId;
 			loc += "&bracketWidth=" + t.bracketWidth;
 			loc += "&bracketHeight=" + t.bracketHeight;
@@ -462,11 +425,11 @@ var ajaxRequests = new AjaxQueue(1, "AjaxQueue", 15000, 4, 0 );
 
 function viewBracket(){
 	with(window.document.theForm){
-		if(weightGroupBox.value==""){
-			alert("You must select a weight group to view a bracket in.");
+		if(weightBox.value==""){
+			alert("You must select a weight class to view the bracket for.");
 		}else{
 
-			var w = weights.get(parseInt(weightGroupBox.value));
+			var w = weights.get(parseInt(weightBox.value));
 			var t = templates.get(parseInt(templateBox.value));
 			t.bracketWidth = bracketWidth.value;
 			t.bracketHeight = bracketHeight.value;
@@ -495,10 +458,10 @@ function viewBracket(){
 			
 			Object.assign(gtmObject.targeting, {
 				"bracket_id": [w.weightId],
-				"bracket_name": [[w.getDivision().divisionName, w.weightName].join(" - ")]
+				"bracket_name": [w.weightName]
 			});
 
-			var loc = "AjaxFunctions.jsp?TIM=1734466022705&twSessionId=zyxwvutsrq&function=getBracket";
+			var loc = "AjaxFunctions.jsp?TIM=1734798377146&twSessionId=zyxwvutsrq&function=getBracket";
 			var parms = "";
 			parms += "&groupId=" + w.weightId;
 			parms += "&width=" + t.bracketWidth;
@@ -584,25 +547,14 @@ function drawBracket(str){
 			}
 		}
 	}
-	
+
 }
 
-function Division(dNdx, dId, dName){
-	this.divisionIndex = dNdx;
-	this.divisionId = dId;
-	this.divisionName = dName;
-	this.weights = new Pile();
-}
-
-function Weight(wNdx, dId, wId, wName, bId){
+function Weight(wNdx, wId, wName, bId){
 	this.weightIndex = wNdx;
-	this.divisionId = dId;
 	this.weightId = wId;
 	this.weightName = wName;
 	this.bracketId = bId;
-	this.getDivision = () => {
-		return divisions.pileArr.find(d => d.divisionId === this.divisionId);
-	}
 }
 
 function Template(tNdx, bId, tId, tName, bw, bh, bf, p){
@@ -671,7 +623,6 @@ function BracketPage(pNdx, pId, pName, sp){
 		return t;
 		
 	}
-	
 }
 
 function BracketType(bId){
@@ -689,7 +640,7 @@ function foucsSidebarBox(){
 	if(!$(document.getElementById(e)).hasClass(c)){
 		toggleElementClass(e,c);
 	}
-	document.getElementById("weightGroupBox").focus();
+	document.getElementById("weightBox").focus();
 }
 
 function resetScroll(d){
@@ -704,7 +655,7 @@ function openMyTrackMember(){
 	
 	if(parent.isGoldMember){
 	
-		openPage("./Charts.jsp?TIM=1734466022705&twSessionId=zyxwvutsrq&twId=", 600, 1075, "maximize=yes,scrollbars=yes,resizable=yes,menubar=yes", "Brackets")
+		openPage("./Charts.jsp?TIM=1734798377146&twSessionId=zyxwvutsrq&twId=", 600, 1075, "maximize=yes,scrollbars=yes,resizable=yes,menubar=yes", "Brackets")
 	
 		html += "<div class='message bracket-message gold-message'>";
 		html += "	<i aria-hidden='true' class='message-icon icon-bracket'></i>";
@@ -712,7 +663,7 @@ function openMyTrackMember(){
 		html += "	<h2>View multiple brackets at a time</h2>";
 		html += "</div>";
 		html += "<div class='message-buttons'>";
-		html += "	<input class='plain-button' type='button' value='View Brackets' onclick=\"openPage('./Charts.jsp?TIM=1734466022705&twSessionId=zyxwvutsrq&twId=', 600, 1075, 'maximize=yes,scrollbars=yes,resizable=yes,menubar=yes', 'Brackets')\"></input>";
+		html += "	<input class='plain-button' type='button' value='View Brackets' onclick=\"openPage('./Charts.jsp?TIM=1734798377146&twSessionId=zyxwvutsrq&twId=', 600, 1075, 'maximize=yes,scrollbars=yes,resizable=yes,menubar=yes', 'Brackets')\"></input>";
 		html += "</div>";
 	}else{
 		html += "<div class='message bracket-message gold-message'>";
@@ -768,9 +719,9 @@ function openGoldSubscribe(){
 
 </script>
 
-<link rel='canonical' href='https://www.trackwrestling.com/opentournaments/BracketViewer.jsp?tournamentId=891667132'/>
+<link rel='canonical' href='https://www.trackwrestling.com/predefinedtournaments/BracketViewer.jsp?tournamentId=867679132'/>
 
-<script type='text/javascript'>var SSPstring = 'rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAADB3CAAAAEAAAAAjdAAJU1NfVGVhbUlkdAAAdAAEV29yZHB0AAtTU19Vc2VyTmFtZXB0AAtPcmRlck51bWJlcnB0AAlteVRyYWNrSWRxAH4AA3QADXBhcnRpY2lwYW50SWRxAH4AA3QAEVRvdXJuYW1lbnRHcm91cElkcHQACGxlYWd1ZUlkcQB+AAN0AAhzdFRlYW1JZHEAfgADdAAIcG9ydGFsSWRxAH4AA3QADHRvdXJuYW1lbnRJZHQACTg5MTY2NzEzMnQABXB3b3JkcQB+AAN0AA10cmFuc0RldGFpbElkcQB+AAN0AA1TU19Vc2VyVHlwZUlkcHQACndyZXN0bGVySWRxAH4AA3QACFBhc3N3b3JkcQB+AAN0AAdldmVudElkcQB+AAN0AAZBVU5hbWVwdAAGQVBXb3JkcHQACFVzZXJOYW1ldAAAdAAFdW5hbWVxAH4AA3QADXRyYW5zYWN0aW9uSWRxAH4AA3QADlRvdXJuYW1lbnRUeXBldAABMnQABmR1YWxJZHEAfgADdAAHU1NfR0JJZHB0ABNTeXN0ZW1BZG1pblBhc3N3b3JkcHQABlVzZXJJZHB0AAZ0ZWFtSWRxAH4AA3QAClNTUF9leHBpcmV0AA0xNzM0NDY5NjIyNzQ1dAAMVG91cm5hbWVudElkcQB+AA50AAlyYW5raW5nSWRxAH4AA3QACHVzZXJUeXBldAAGdmlld2VydAALU1NfU2Vhc29uSWRwdAAIVXNlclR5cGVxAH4AJ3QABVNTX1BXcHg=';</script>
+<script type='text/javascript'>var SSPstring = 'rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAADB3CAAAAEAAAAAjdAAJU1NfVGVhbUlkdAAAdAAEV29yZHB0AAtTU19Vc2VyTmFtZXB0AAtPcmRlck51bWJlcnB0AAlteVRyYWNrSWRxAH4AA3QADXBhcnRpY2lwYW50SWRxAH4AA3QAEVRvdXJuYW1lbnRHcm91cElkcHQACGxlYWd1ZUlkcQB+AAN0AAhzdFRlYW1JZHEAfgADdAAIcG9ydGFsSWRxAH4AA3QADHRvdXJuYW1lbnRJZHQACTg2NzY3OTEzMnQABXB3b3JkcQB+AAN0AA10cmFuc0RldGFpbElkcQB+AAN0AA1TU19Vc2VyVHlwZUlkcHQACndyZXN0bGVySWRxAH4AA3QACFBhc3N3b3JkcQB+AAN0AAdldmVudElkcQB+AAN0AAZBVU5hbWVwdAAGQVBXb3JkcHQACFVzZXJOYW1ldAAAdAAFdW5hbWVxAH4AA3QADXRyYW5zYWN0aW9uSWRxAH4AA3QADlRvdXJuYW1lbnRUeXBldAABMXQABmR1YWxJZHEAfgADdAAHU1NfR0JJZHB0ABNTeXN0ZW1BZG1pblBhc3N3b3JkcHQABlVzZXJJZHB0AAZ0ZWFtSWRxAH4AA3QAClNTUF9leHBpcmV0AA0xNzM0ODAxOTc3MTYxdAAMVG91cm5hbWVudElkcQB+AA50AAlyYW5raW5nSWRxAH4AA3QACHVzZXJUeXBldAAGdmlld2VydAALU1NfU2Vhc29uSWRwdAAIVXNlclR5cGVxAH4AJ3QABVNTX1BXcHg=';</script>
 </head>
 
 
@@ -791,7 +742,7 @@ try{ initGoogleTagManager(1); }catch(gtmError){}
 
 	<div class="row">
 		<div class="cell">
-						
+			
 			<div class="table row-header">
 			
 				<div class="col-header sidebar-column bracket-header bracket-sidebar-header">
@@ -819,7 +770,7 @@ try{ initGoogleTagManager(1); }catch(gtmError){}
 				<div class="cell sidebar-column sidebar-content-frame">
 					<div class="scroll-box sidebar-box">
 						<div class="sidebar-content" id="sidebar-content">
-							<div class="sidebar-input" id="weightGroupFrame"></div>
+							<div class="sidebar-input" id="weightFrame"></div>
 							<div class="sidebar-input" id="newWindowFrame"><label for="bracketNewWindow">New Window</label><input type="checkbox" id="bracketNewWindow" class="tw-box"></input></div>
 							<div class="sidebar-input" id="templateFrame"></div>
 							<div class="sidebar-input settings-frame" id="settingsFrame"></div>
