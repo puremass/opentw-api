@@ -61,13 +61,11 @@ def detect_match_changes(old_matches: List[Match], new_matches: List[Match]) -> 
                 f"Mat {old_match.mat} → Mat {new_match.mat} "
                 f"({new_match.wrestler1.name} vs {new_match.wrestler2.name})"
             )
-        
 
     return changes
 
 async def check_match_updates():
     """Background task to check for match updates every 30 seconds"""
-    first_run = True
     while True:
         try:
             # Get all active tournaments (you'll need to implement this based on your needs)
@@ -93,21 +91,19 @@ async def check_match_updates():
                     changes = detect_match_changes(match_states[tournament_key], current_matches)
                     
                     # Print any detected changes
-                    if not first_run:
-                        for change in changes:
-                            print("Sending Discord notification...")
-                            url: str = "https://discord.com/api/webhooks/1320069410995699833/9WUm6zR0YpbyL4doeYgZ82EmBUvHhZgmlQP_tzb5_cHINA_Avu687AiYuOpUbDyFic_d"
-                            payload = {
-                                "content": "@everyone " + change
-                            }
-                            async with ClientSession().post(url, json=payload) as resp:
-                                print(f"Discord response: {resp.status}")
+                    for change in changes:
+                        print("Sending Discord notification...")
+                        url: str = "https://discord.com/api/webhooks/1320069410995699833/9WUm6zR0YpbyL4doeYgZ82EmBUvHhZgmlQP_tzb5_cHINA_Avu687AiYuOpUbDyFic_d"
+                        payload = {
+                            "content": "@everyone " + change
+                        }
+                        async with ClientSession().post(url, json=payload) as resp:
+                            print(f"Discord response: {resp.status}")
 
-                            print(f"[{datetime.now()}] {change}")
-                    
+                        print(f"[{datetime.now()}] {change}")
+                
                 # Update stored state
                 match_states[tournament_key] = current_matches
-                first_run = False
 
         except Exception as e:
             print(f"Error in background task: {e}")
