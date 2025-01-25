@@ -117,7 +117,7 @@ async def check_match_updates():
 @app.before_server_start
 async def setup_background_tasks(app, loop):
     """Start the background task when the server starts"""
-    app.add_task(check_match_updates())
+    # app.add_task(check_match_updates())
 
 @app.get("/")
 async def index(_: Request) -> Response:
