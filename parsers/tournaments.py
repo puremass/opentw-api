@@ -409,8 +409,8 @@ async def get_brackets(tournament_type: EventType, tournament_id: int) -> Bracke
             },
         ) as response:
             html = await response.text()
-            open("yeah.html", "w").write(html)
-            print("Got url " + response.url.__str__())
+            # open("yeah.html", "w").write(html)
+            # print("Got url " + response.url.__str__())
             return parse_bracket_data(html)    
 
 def parse_bracket_data(html_content: str) -> BracketData:
