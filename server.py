@@ -1,8 +1,6 @@
 from sanic_ext import Extend
-from datetime import datetime
 from typing import Dict, List
 from sanic import Sanic, Request
-from aiohttp import ClientSession
 from models.response import Response
 from models.ttypes import EventType, Match
 from parsers.tournaments import search_tournaments, get_tournament_info, get_mat_assignment, get_brackets, get_bracket_data_html

@@ -11,7 +11,6 @@ class _SessionManager:
         self.sessions: Dict[int, ClientSession] = {}
     
     async def cleanup(self):
-        print("CLEANING UP SESSIONS")
         for session in self.sessions.values():
             if not session.closed:
                 await session.close()
