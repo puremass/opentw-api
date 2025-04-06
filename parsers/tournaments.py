@@ -308,7 +308,6 @@ async def get_tournament_info(
 
             # Find the info content section
             content_div = soup.select_one(".hub-nav > ul > li:first-child .content")
-            # print(html)
             if not content_div:
                 return None
 
@@ -435,18 +434,9 @@ def parse_bracket_data(html_content: str) -> BracketData:
     if not script_content:
         raise ValueError("Could not find bracket data in HTML")
         
-    if "var weights = new Pile();" in script_content:
-        print("Using groupId")
-    
-    def debug_print(data_str: str, label: str):
-        """Helper function to print data for debugging"""
-        print(f"\n=== {label} ===")
-        print(data_str)
-        print("=" * 50)
         
     # Parse templates string (it comes first in the script)
     templates_str = script_content.split('str = "')[1].split('";')[0]
-    debug_print(templates_str, "Templates String")
     templates = []
     if templates_str:
         entries = templates_str.split('~')
@@ -475,7 +465,6 @@ def parse_bracket_data(html_content: str) -> BracketData:
 
     # Parse weights string 
     weights_str = script_content.split('str = "')[2].split('";')[0]
-    debug_print(weights_str, "Weights String")
     weights = []
     if weights_str:
         entries = weights_str.split('~')
@@ -489,7 +478,6 @@ def parse_bracket_data(html_content: str) -> BracketData:
 
     # Parse bracket types string  
     bracket_types_str = script_content.split('str = "')[3].split('";')[0]
-    debug_print(bracket_types_str, "Bracket Types String")
     bracket_types = []
     if bracket_types_str:
         for bracket_id in bracket_types_str.split(','):
@@ -554,7 +542,6 @@ def generate_bracket_url(
 
 
 async def get_bracket_data_html(tournament_type: EventType, tournament_id: int, group_id: int, pages: Tuple[int] = None) -> str:
-    # https://www.trackwrestling.com/predefinedtournaments/AjaxFunctions.jsp?TIM=1734309820692&twSessionId=nrjemjcrpc&function=getBracket&groupId=1227847138&width=670&height=870&font=8&includePages=4&templateId=0
     async with session_manager.get_session(tournament_id, tournament_type) as session:
         async with session.get(
             f"https://www.trackwrestling.com/{tournament_type.tournament_type}/AjaxFunctions.jsp",
@@ -573,26 +560,7 @@ async def get_bracket_data_html(tournament_type: EventType, tournament_id: int, 
                 "templateId": 0,
             },
         ) as response:
-            print("got url " + response.url.__str__())
             return await response.text()
-    # https://www.trackwrestling.com/predefinedtournaments/Bracket.jsp?TIM=1734310516096&twSessionId=nrjemjcrpc&groupId=1227847138&bracketWidth=670&bracketHeight=870&bracketFontSize=8&includePages=4&templateId=
-    # async with session_manager.get_session(tournament_id, tournament_type) as session:
-    #     async with session.get(
-    #         f"https://www.trackwrestling.com/{tournament_type.tournament_type}/Bracket.jsp",
-    #         params={
-    #             "TIM": 1734310516096,
-    #             "twSessionId": "zyxwvutsrq",
-    #             "groupId": group_id,
-    #             # "groupId": tournament_id,
-    #             "bracketWidth": 670,
-    #             "bracketHeight": 870,
-    #             "bracketFontSize": 8,
-    #             "includePages": 4,
-    #             "templateId": 0,
-    #         },
-    #     ) as response:
-    #         return await response.text()
-
 
 def determine_event_type(element) -> int:
     """Determine event type based on CSS classes"""

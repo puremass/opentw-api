@@ -1,4 +1,3 @@
-import asyncio
 from sanic_ext import Extend
 from datetime import datetime
 from typing import Dict, List
