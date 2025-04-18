@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from typing import List, Tuple
 from utils import _get_timestamp
 from datetime import datetime, date
-from models.ttypes import Tournament, Wrestler, Match, Team, EventType, Status, Template, Weight, BracketType, BracketPage, BracketData
+from models.ttypes import Tournament, Wrestler, Match, Team, EventType, Status, Template, Weight, BracketType, BracketPage, BracketData, Division
 from utils.session_manager import session_manager
 
 def _parse_date_range(date_str: str) -> tuple[date, date | None]:
@@ -433,8 +433,7 @@ def parse_bracket_data(html_content: str) -> BracketData:
             
     if not script_content:
         raise ValueError("Could not find bracket data in HTML")
-        
-        
+
     # Parse templates string (it comes first in the script)
     templates_str = script_content.split('str = "')[1].split('";')[0]
     templates = []
@@ -463,35 +462,45 @@ def parse_bracket_data(html_content: str) -> BracketData:
                 pages=pages
             ))
 
+    # Parse divisions
+    divisions_str = script_content.split('str = "')[2].split('";')[0]
+    divisions = []
+    if divisions_str:
+        entries = divisions_str.split('~')
+        for i in range(0, len(entries), 2):
+            divisions.append(Division(
+                division_index=len(divisions),
+                division_id=int(entries[i]),
+                division_name=entries[i+1]
+            ))
+
     # Parse weights string 
-    weights_str = script_content.split('str = "')[2].split('";')[0]
+    weights_str = script_content.split('str = "')[3].split('";')[0]
     weights = []
     if weights_str:
         entries = weights_str.split('~')
-        for i in range(0, len(entries), 3):
+        for i in range(0, len(entries), 4):
             weights.append(Weight(
                 weight_index=len(weights),
-                weight_id=int(entries[i]),
-                weight_name=entries[i+1],
-                bracket_id=int(entries[i+2])
+                weight_id=int(entries[i+1]),
+                weight_name=entries[i+2],
+                division_id=int(entries[i]),
+                bracket_id=int(entries[i+3])
             ))
 
     # Parse bracket types string  
-    bracket_types_str = script_content.split('str = "')[3].split('";')[0]
+    bracket_types_str = script_content.split('str = "')[4].split('";')[0]
     bracket_types = []
     if bracket_types_str:
         for bracket_id in bracket_types_str.split(','):
             bracket_types.append(BracketType(bracket_id=int(bracket_id)))
 
-    # Parse bracket types string  
-    bracket_types_str = script_content.split('str = "')[3].split('";')[0]
-    bracket_types = []
-    if bracket_types_str:
-        for bracket_id in bracket_types_str.split(','):
-            bracket_types.append(BracketType(bracket_id=int(bracket_id)))
-
-    # return weights, templates, bracket_types
-    return BracketData(weights=weights, templates=templates, bracket_types=bracket_types)
+    return BracketData(
+        divisions=divisions,
+        weights=weights,
+        templates=templates,
+        bracket_types=bracket_types
+    )
 
 def generate_bracket_url(
         tournament_type: EventType,
