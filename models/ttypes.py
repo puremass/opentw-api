@@ -140,10 +140,17 @@ class Template(BaseClass):
     pages: List[BracketPage]
 
 @dataclass
+class Division(BaseClass):
+    division_index: int
+    division_id: int
+    division_name: str
+
+@dataclass
 class Weight(BaseClass):
     weight_index: int
     weight_id: int
     weight_name: str
+    division_id: int
     bracket_id: int
 
 @dataclass
@@ -153,6 +160,7 @@ class BracketType(BaseClass):
 
 @dataclass
 class BracketData(BaseClass):
+    divisions: List[Division]
     weights: List[Weight]
     templates: List[Template]
     bracket_types: List[BracketType]
