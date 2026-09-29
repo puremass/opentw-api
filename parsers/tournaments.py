@@ -4,8 +4,9 @@ from bs4 import BeautifulSoup
 from typing import Iterable, List, Tuple
 from utils import _get_timestamp
 from datetime import datetime, date
-from models.ttypes import Tournament, Wrestler, Match, Team, EventType, Status, Template, Weight, BracketType, BracketPage, BracketData, Division
+from models.ttypes import Tournament, Wrestler, Match, Team, EventType, Status, Template, Weight, BracketType, BracketPage, BracketData, Division, BracketSheet
 from utils.session_manager import session_manager
+from parsers.brackets import parse_bracket_sheet
 
 _log = logging.getLogger(__name__)
 
@@ -137,7 +138,9 @@ def _parse_tournaments(html_content: str) -> List[Tournament]:
                 )
 
             tournament_id = int(params[0])
-            name = params[1]
+            # TrackWrestling writes an apostrophe as a BACKTICK inside these quoted arguments -
+            # "2026 NCAA Women`s National Championships" - which is its escaping, not the name.
+            name = params[1].replace("`", "'")
             event_type = EventType.from_id(int(params[2]))
             logo_url = params[3]
 
@@ -365,92 +368,94 @@ async def get_mat_assignment(
         List[Match]: A list of Match objects representing the mat assignments
     """
     # return _parse_tournament_matches(open("htmls/mat-schedule.html", "r").read())
-    async with session_manager.get_session(tournament_id) as session:
-        async with session.get(
-            f"https://www.trackwrestling.com/{tournament_type.tournament_type}/MB_MatAssignmentDisplay.jsp",
-            params={
-                "TIM": _get_timestamp(),
-                "twSessionId": "zyxwvutsrq",
-                "tournamentId": tournament_id,
-            },
-        ) as response:
-            html = await response.text()
-            return _parse_tournament_matches(html)
+    html = await session_manager.fetch(
+        "GET",
+        f"https://www.trackwrestling.com/{tournament_type.tournament_type}/MB_MatAssignmentDisplay.jsp",
+        tournament_id,
+        tournament_type,
+        params={
+            "TIM": _get_timestamp(),
+            "twSessionId": "zyxwvutsrq",
+            "tournamentId": tournament_id,
+        },
+    )
+    return _parse_tournament_matches(html)
 
 
 async def get_tournament_info(
     tournament_type: EventType, tournament_id: int
 ) -> Tournament:
-    async with session_manager.get_session(tournament_id, tournament_type) as session:
-        async with session.get(
-            f"https://www.trackwrestling.com/{tournament_type.tournament_type}/TournamentHub.jsp",
-            params={
-                "TIM": _get_timestamp(),
-                "twSessionId": "zyxwvutsrq",
-                "tournamentId": str(tournament_id),
-            },
-        ) as response:
-            html = await response.text()
-            soup = BeautifulSoup(html, "html.parser")
+    html = await session_manager.fetch(
+        "GET",
+        f"https://www.trackwrestling.com/{tournament_type.tournament_type}/TournamentHub.jsp",
+        tournament_id,
+        tournament_type,
+        params={
+            "TIM": _get_timestamp(),
+            "twSessionId": "zyxwvutsrq",
+            "tournamentId": str(tournament_id),
+        },
+    )
+    soup = BeautifulSoup(html, "html.parser")
 
-            # Find the info content section
-            content_div = soup.select_one(".hub-nav > ul > li:first-child .content")
-            if not content_div:
-                return None
+    # Find the info content section
+    content_div = soup.select_one(".hub-nav > ul > li:first-child .content")
+    if not content_div:
+        return None
 
-            # Get tournament name
-            name_elem = content_div.select_one("h3")
-            name = name_elem.text.strip() if name_elem else ""
+    # Get tournament name
+    name_elem = content_div.select_one("h3")
+    name = name_elem.text.strip() if name_elem else ""
 
-            # Get logo URL
-            logo_img = content_div.select_one(".logo-icon img")
-            logo_url = logo_img["src"] if logo_img else None
+    # Get logo URL
+    logo_img = content_div.select_one(".logo-icon img")
+    logo_url = logo_img["src"] if logo_img else None
 
-            # Parse date information
-            date_p = content_div.select("p")[0]
-            date_text = date_p.text.strip()
+    # Parse date information
+    date_p = content_div.select("p")[0]
+    date_text = date_p.text.strip()
 
-            # One date parser, not two. The hub's own could not read "03/19 - 03/21/2026"
-            # and returned null starts for every multi-day tournament.
-            start_date, end_date = _parse_date_range(date_text)
+    # One date parser, not two. The hub's own could not read "03/19 - 03/21/2026"
+    # and returned null starts for every multi-day tournament.
+    start_date, end_date = _parse_date_range(date_text)
 
-            # Parse venue information
-            address_p = (
-                content_div.select("p")[1] if len(content_div.select("p")) > 1 else None
-            )
-            venue_info = parse_venue_info(address_p.text) if address_p else {}
+    # Parse venue information
+    address_p = (
+        content_div.select("p")[1] if len(content_div.select("p")) > 1 else None
+    )
+    venue_info = parse_venue_info(address_p.text) if address_p else {}
 
-            # Look for URLs in the nav sections
-            flyer_link = soup.select_one('a[href*="event_flyer"]')
-            event_flyer_url = flyer_link["href"] if flyer_link else None
+    # Look for URLs in the nav sections
+    flyer_link = soup.select_one('a[href*="event_flyer"]')
+    event_flyer_url = flyer_link["href"] if flyer_link else None
 
-            website_link = soup.select_one('a[href*="website"]')
-            website_url = website_link["href"] if website_link else None
+    website_link = soup.select_one('a[href*="website"]')
+    website_url = website_link["href"] if website_link else None
 
-            # Determine event type from the badge/class
-            event_type_elem = soup.select_one(
-                '[class*="bg-purple-"], [class*="bg-green-"], [class*="bg-blue-"], [class*="bg-orange-"], [class*="bg-pink-"]'
-            )
-            event_type = (
-                EventType.from_id(determine_event_type(event_type_elem))
-                if event_type_elem
-                else tournament_type
-            )  # Default to Predefined
+    # Determine event type from the badge/class
+    event_type_elem = soup.select_one(
+        '[class*="bg-purple-"], [class*="bg-green-"], [class*="bg-blue-"], [class*="bg-orange-"], [class*="bg-pink-"]'
+    )
+    event_type = (
+        EventType.from_id(determine_event_type(event_type_elem))
+        if event_type_elem
+        else tournament_type
+    )  # Default to Predefined
 
-            return Tournament(
-                id=tournament_id,
-                name=name,
-                event_type=event_type,
-                start_date=start_date,
-                end_date=end_date,
-                venue_name=venue_info.get("name"),
-                venue_city=venue_info.get("city"),
-                venue_state=venue_info.get("state"),
-                venue_zip=venue_info.get("zip"),
-                logo_url=logo_url,
-                event_flyer_url=event_flyer_url,
-                website_url=website_url,
-            )
+    return Tournament(
+        id=tournament_id,
+        name=name,
+        event_type=event_type,
+        start_date=start_date,
+        end_date=end_date,
+        venue_name=venue_info.get("name"),
+        venue_city=venue_info.get("city"),
+        venue_state=venue_info.get("state"),
+        venue_zip=venue_info.get("zip"),
+        logo_url=logo_url,
+        event_flyer_url=event_flyer_url,
+        website_url=website_url,
+    )
 
 
 def parse_venue_info(address_text: str) -> dict:
@@ -477,19 +482,18 @@ def parse_venue_info(address_text: str) -> dict:
     return venue_info
 
 async def get_brackets(tournament_type: EventType, tournament_id: int) -> BracketData:
-    async with session_manager.get_session(tournament_id, tournament_type) as session:
-        async with session.get(
-            f"https://www.trackwrestling.com/{tournament_type.tournament_type}/BracketViewer.jsp",
-            params={
-                "TIM": _get_timestamp(),
-                "twSessionId": "zyxwvutsrq",
-                "tournamentId": tournament_id,
-            },
-        ) as response:
-            html = await response.text()
-            # open("yeah.html", "w").write(html)
-            # print("Got url " + response.url.__str__())
-            return parse_bracket_data(html)    
+    html = await session_manager.fetch(
+        "GET",
+        f"https://www.trackwrestling.com/{tournament_type.tournament_type}/BracketViewer.jsp",
+        tournament_id,
+        tournament_type,
+        params={
+            "TIM": _get_timestamp(),
+            "twSessionId": "zyxwvutsrq",
+            "tournamentId": tournament_id,
+        },
+    )
+    return parse_bracket_data(html)
 
 def _pile_payloads(script_content: str) -> List[str]:
     """Every `str = "..."` payload in the Pile script, in document order.
@@ -694,25 +698,32 @@ def generate_bracket_url(
 
 
 async def get_bracket_data_html(tournament_type: EventType, tournament_id: int, group_id: int, pages: Tuple[int] = None) -> str:
-    async with session_manager.get_session(tournament_id, tournament_type) as session:
-        async with session.get(
-            f"https://www.trackwrestling.com/{tournament_type.tournament_type}/AjaxFunctions.jsp",
-            params={
-                "TIM": _get_timestamp(),
-                "twSessionId": "zyxwvutsrq",
-                "function": "getBracket",
-                "groupId": group_id,
-                "chartId": group_id,
-                "width": 670,
-                "height": 870,
-                "font": 8,
-                "includePages": ",".join((str(p) for p in pages)) if pages else "",
-                # 4 = bottom, 5 = top
-                # "includePages": "5",
-                "templateId": 0,
-            },
-        ) as response:
-            return await response.text()
+    # Every parameter is required: an incomplete set answers "There has been an error".
+    return await session_manager.fetch(
+        "GET",
+        f"https://www.trackwrestling.com/{tournament_type.tournament_type}/AjaxFunctions.jsp",
+        tournament_id,
+        tournament_type,
+        params={
+            "TIM": _get_timestamp(),
+            "twSessionId": "zyxwvutsrq",
+            "function": "getBracket",
+            "groupId": group_id,
+            "chartId": group_id,
+            "width": 670,
+            "height": 870,
+            "font": 8,
+            "includePages": ",".join((str(p) for p in pages)) if pages else "",
+            "templateId": 0,
+        },
+    )
+
+
+async def get_bracket_sheet(tournament_type: EventType, tournament_id: int, group_id: int) -> BracketSheet:
+    """One weight's bracket, parsed into entries, bout numbers, pigtail entrants and routes."""
+    return parse_bracket_sheet(
+        await get_bracket_data_html(tournament_type, tournament_id, group_id)
+    )
 
 def determine_event_type(element) -> int:
     """Determine event type based on CSS classes"""
