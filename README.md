@@ -76,6 +76,7 @@ Returns detailed bracket information for a specific weight class.
    ```
    python smoke_test.py
    ```
+   `python test_parsers.py` checks the parsing edge cases offline.
 
 The server will start on `localhost:8000` by default.
 
@@ -100,6 +101,7 @@ status codes.
 - `main.py` - Entry point; reads HOST/PORT and runs the server
 - `server.py` - Sanic app and route definitions
 - `smoke_test.py` - End-to-end checks against the live site
+- `test_parsers.py` - Offline checks of the parsing edge cases
 - `models/` - Data models and types
 - `parsers/` - HTML parsing logic for different TrackWrestling views
 

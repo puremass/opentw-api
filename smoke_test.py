@@ -81,8 +81,16 @@ async def main() -> int:
     url = generate_bracket_url(
         TOURNAMENT_TYPE, lightest.weight_id, data.templates[0], pages=[2]
     )
-    check("bracket url uses bracketWidth", "bracketWidth=" in url)
-    check("bracket url uses groupId", f"groupId={lightest.weight_id}" in url)
+    # Fetch it, and fetch it again at double size: if Bracket.jsp ignored the dimension
+    # parameters the two pages would be laid out identically.
+    async with session_manager.get_session(TOURNAMENT_ID, TOURNAMENT_TYPE) as session:
+        async with session.get(url) as response:
+            page = await response.text()
+        big = url.replace(f"bracketWidth={data.templates[0].bracket_width}", "bracketWidth=1400")
+        async with session.get(big) as response:
+            big_page = await response.text()
+    check("bracket url renders results", any(k in page for k in ("Dec ", "Fall", "MD ", "TF-")))
+    check("bracket url respects bracketWidth", page != big_page and "1400" in big_page)
 
     print("mat assignments")
     live = await get_mat_assignment(TOURNAMENT_TYPE, TOURNAMENT_ID)

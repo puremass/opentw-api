@@ -17,6 +17,9 @@ def _parse_date_range(date_str: str) -> tuple[date | None, date | None]:
         03/19/2026 - 03/21/2026     both years given
         03/19 - 03/21/2026          start omits the year, which the END carries
 
+    When the start borrows the end's year, a range that crosses New Year
+    ("12/30 - 01/02/2027") would put the start after the end, so the start rolls back a year.
+
     The second is why the tournament hub reported a null start date: it fed the bare
     "03/19" to a %m/%d/%Y parse, which fails, and the failure was swallowed.
 
@@ -31,7 +34,8 @@ def _parse_date_range(date_str: str) -> tuple[date | None, date | None]:
     start_str, end_str = parts[0], parts[1] if len(parts) > 1 else None
 
     # Borrow the year from the end date when the start omits it.
-    if end_str and len(start_str.split("/")) == 2:
+    borrowed_year = bool(end_str) and len(start_str.split("/")) == 2
+    if borrowed_year:
         start_str = f"{start_str}/{end_str.split('/')[-1]}"
 
     def parse(value: str | None) -> date | None:
@@ -42,7 +46,12 @@ def _parse_date_range(date_str: str) -> tuple[date | None, date | None]:
         except ValueError:
             return None
 
-    return parse(start_str), parse(end_str)
+    start, end = parse(start_str), parse(end_str)
+
+    if borrowed_year and start and end and start > end:
+        start = start.replace(year=start.year - 1)
+
+    return start, end
 
 
 def _parse_venue_address(address_text: str) -> tuple[str, str, str, str, str]:
@@ -72,15 +81,22 @@ def _split_js_args(raw: str) -> List[str]:
     tournament whose name contains a comma — silently, because the loop swallowed the
     ValueError.
 
-    Quotes are consumed here, so callers get the bare value.
+    Quotes are consumed here, so callers get the bare value. A backslash inside quotes
+    escapes the next character, so 'St. Mary\'s Open' comes back as St. Mary's Open.
     """
     args: List[str] = []
     current: List[str] = []
     quote: str | None = None
+    escaped = False
 
     for ch in raw:
-        if quote:
-            if ch == quote:
+        if escaped:
+            current.append(ch)
+            escaped = False
+        elif quote:
+            if ch == "\\":
+                escaped = True
+            elif ch == quote:
                 quote = None
             else:
                 current.append(ch)
@@ -393,7 +409,6 @@ async def get_tournament_info(
             # Parse date information
             date_p = content_div.select("p")[0]
             date_text = date_p.text.strip()
-            dates = date_text.split(" - ") if " - " in date_text else [date_text]
 
             # One date parser, not two. The hub's own could not read "03/19 - 03/21/2026"
             # and returned null starts for every multi-day tournament.
@@ -436,14 +451,6 @@ async def get_tournament_info(
                 event_flyer_url=event_flyer_url,
                 website_url=website_url,
             )
-
-
-def parse_date(date_str: str) -> datetime:
-    """Parse date string into datetime object"""
-    try:
-        return datetime.strptime(date_str.strip(), "%m/%d/%Y")
-    except ValueError:
-        return None
 
 
 def parse_venue_info(address_text: str) -> dict:
@@ -547,57 +554,41 @@ def _parse_divisions(payload: str) -> List[Division]:
     return divisions
 
 
-def _parse_weights(payload: str) -> List[Weight]:
-    """Weights, in whichever of the two shapes the page is using.
+def _parse_weights(payload: str, with_division: bool) -> List[Weight]:
+    """Weights, in the shape the page layout says they are in.
 
-    Three fields — weightId, name, bracketId — is what TrackWrestling serves now.
-    Four fields — divisionId, weightId, name, bracketId — is the older shape, kept because
-    nothing says every tournament type moved at once.
+    Three fields - weightId, name, bracketId - is what TrackWrestling serves now.
+    Four fields - divisionId, weightId, name, bracketId - is the older shape, which came
+    with a divisions block; the division id went away when that block did.
 
-    The shape is decided by which field count divides the entry list AND leaves every name
-    field looking like a weight class. Guessing from the block's POSITION is what broke
-    before: the divisions block disappeared and everything shifted up one.
+    The shape is decided by that layout, not by trying field counts against the data.
+    Weight names are usually numeric ("125"), so a list of 12 entries fits both shapes and
+    a guess picks wrong for one of them.
     """
     weights: List[Weight] = []
     if not payload:
         return weights
 
     entries = payload.split('~')
+    stride = 4 if with_division else 3
 
-    def plausible(stride: int, name_at: int) -> bool:
-        if len(entries) % stride != 0:
-            return False
-        # Every id field must be an integer, and no name field may be empty.
-        for i in range(0, len(entries), stride):
-            ids = [entries[i + k] for k in range(stride) if k != name_at]
-            if not all(v.strip().lstrip('-').isdigit() for v in ids):
-                return False
-            if not entries[i + name_at].strip():
-                return False
-        return True
-
-    if plausible(3, name_at=1):
-        for i in range(0, len(entries), 3):
-            weights.append(Weight(
-                weight_index=len(weights),
-                weight_id=int(entries[i + 0]),
-                weight_name=entries[i + 1],
-                bracket_id=int(entries[i + 2]),
-            ))
-    elif plausible(4, name_at=2):
-        for i in range(0, len(entries), 4):
-            weights.append(Weight(
-                weight_index=len(weights),
-                division_id=int(entries[i + 0]),
-                weight_id=int(entries[i + 1]),
-                weight_name=entries[i + 2],
-                bracket_id=int(entries[i + 3]),
-            ))
-    else:
+    if len(entries) % stride != 0:
         raise ValueError(
-            f"Weights payload fits neither the 3-field nor the 4-field shape "
-            f"({len(entries)} entries): {entries[:8]}"
+            f"Weights payload has {len(entries)} entries, not a multiple of {stride}: "
+            f"{entries[:8]}"
         )
+
+    for i in range(0, len(entries), stride):
+        row = entries[i:i + stride]
+        division_id = int(row.pop(0)) if with_division else None
+        weight_id, weight_name, bracket_id = row
+        weights.append(Weight(
+            weight_index=len(weights),
+            division_id=division_id,
+            weight_id=int(weight_id),
+            weight_name=weight_name,
+            bracket_id=int(bracket_id),
+        ))
 
     return weights
 
@@ -648,9 +639,11 @@ def parse_bracket_data(html_content: str) -> BracketData:
     middle = payloads[1:-1]
 
     if len(middle) == 1:
-        divisions, weights = [], _parse_weights(middle[0])
+        divisions = []
+        weights = _parse_weights(middle[0], with_division=False)
     elif len(middle) == 2:
-        divisions, weights = _parse_divisions(middle[0]), _parse_weights(middle[1])
+        divisions = _parse_divisions(middle[0])
+        weights = _parse_weights(middle[1], with_division=True)
     else:
         raise ValueError(
             f"Unrecognised BracketViewer layout: {len(payloads)} data blocks"
