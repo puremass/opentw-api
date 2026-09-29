@@ -229,7 +229,7 @@ def _parse_wrestler_data(wrestler_element) -> Wrestler:
         record = record_match.group(1)
 
     year = None
-    year_match = re.search(r"(Sr|Jr|So|Fr)", full_text)
+    year_match = re.search(r"\b(Sr|Jr|So|Fr)\b", full_text)
     if year_match:
         year = year_match.group(1)
 

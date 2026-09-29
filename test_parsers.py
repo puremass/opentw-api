@@ -77,7 +77,7 @@ row = """<table><tr>
 <td valign="top">
 <div><div style="display: table; width: 100%;"><div data-short-title="106" style="display: table-cell;"><span>106</span></div><div style="display: table-cell; text-align: right;">Round 3</div></div></div>
 <div>
-<font data-team-id="11" data-wrestler-id="21"><span data-short-title="A."><span>Alex</span></span> <span data-short-title="Sample"><span>Sample</span></span>,  0-2 (<span data-short-title="NHS"><span>North High</span></span>)</font> vs
+<font data-team-id="11" data-wrestler-id="21"><span data-short-title="A."><span>Alex</span></span> <span data-short-title="Sample"><span>Sample</span></span>, Jr 0-2 (<span data-short-title="NHS"><span>North High</span></span>)</font> vs
 <font data-team-id="12" data-wrestler-id="22"><span data-short-title="J."><span>Jordan</span></span> <span data-short-title="Example"><span>Example</span></span>,  1-1 (<span data-short-title="SHS"><span>South High</span></span>)</font>
 </div>
 </td>
@@ -90,6 +90,8 @@ check("wrestler names", (m.wrestler1.first_name, m.wrestler1.last_name, m.wrestl
 check("team is the team, not an initial",
       (m.wrestler1.team.shortName, m.wrestler1.team.name, m.wrestler2.team.shortName), ("NHS", "North High", "SHS"))
 check("record", m.wrestler2.record, "1-1")
+check("class year", m.wrestler1.year, "Jr")
+check("no class year, and \"Jordan\" is not read as one", m.wrestler2.year, None)
 
 print()
 if failures:
