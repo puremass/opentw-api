@@ -153,6 +153,9 @@ status codes.
 - `parsers/brackets.py` - A weight's bracket sheet: entries, bout numbers, routing
 - `parsers/results.py` - RoundResults.jsp: every result in a tournament
 - `utils/session_manager.py` - Viewer sessions, and recovery when TrackWrestling expires them
+- `AGENTS.md`, `skills/`, `docs/agents/` - Instructions for AI coding agents, in the
+  [Open Agent Format](https://openagentformat.com/). They are read by Claude Code (through
+  `CLAUDE.md`), GitHub Copilot and OpenCode.
 
 ## Live Demo
 
